@@ -540,6 +540,256 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+    <!DOCTYPE html>
+<html>
+<head>
+<title>IPL Auction Panel</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f1f1f1;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 94%;
+    max-width: 900px;
+    margin: auto;
+    margin-top: 20px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #aaa;
+}
+
+/* Hidden by default */
+.page { display: none; }
+
+input, select {
+    width: 95%;
+    padding: 10px;
+    margin: 7px 0;
+    border-radius: 5px;
+    border: 1px solid #777;
+}
+
+button {
+    padding: 10px 15px;
+    background: #ff9800;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+td, th {
+    border: 1px solid #444;
+    padding: 8px;
+    text-align: center;
+}
+.remove {
+    background: red;
+    padding: 4px 8px;
+    color: white;
+    border-radius: 3px;
+}
+</style>
+
+<script>
+function show(page){
+    document.querySelectorAll(".page").forEach(p => p.style.display="none");
+    document.getElementById(page).style.display="block";
+}
+
+/* local user store */
+let users = {};
+let bidder = {};
+
+function registerUser(){
+    let u = document.getElementById("rUser").value.trim();
+    let p = document.getElementById("rPass").value;
+
+    if(u=="" || p==""){ alert("Fill all fields"); return; }
+
+    if(users[u]){ alert("Username already exists"); return; }
+
+    users[u] = p;
+    bidder[u] = false;
+
+    alert("Registration successful!");
+    show("login");
+}
+
+function loginUser(){
+    let u = document.getElementById("lUser").value.trim();
+    let p = document.getElementById("lPass").value;
+
+    if(u=="" || p==""){ alert("Enter full details"); return; }
+
+    // ADMIN LOGIN
+    if(u=="bluezone0025" && p=="qwertyuiop1234"){
+        show("admin");
+        return;
+    }
+
+    if(!users[u] || users[u] !== p){
+        alert("Invalid credentials");
+        return;
+    }
+
+    document.getElementById("role").innerHTML = 
+        bidder[u] ? "Role: Bidder" : "Role: Viewer";
+
+    show("user");
+}
+
+function promoteUser(){
+    let u = document.getElementById("promoteName").value.trim();
+    if(!users[u]){ alert("User not found"); return; }
+
+    bidder[u] = true;
+    alert(u+" promoted to Bidder!");
+}
+
+function addPlayer(){
+    let n = document.getElementById("pName").value.trim();
+    let t = document.getElementById("pTeam").value;
+    let r = document.getElementById("pRole").value;
+
+    if(n=="" || t=="" || r==""){
+        alert("Fill all fields");
+        return;
+    }
+
+    let row =
+        `<tr>
+            <td>${n}</td>
+            <td>${t}</td>
+            <td>${r}</td>
+            <td><button class='remove' onclick='this.parentNode.parentNode.remove()'>X</button></td>
+        </tr>`;
+
+    document.getElementById("playerBody").insertAdjacentHTML("beforeend", row);
+
+    alert("Player Added!");
+}
+</script>
+</head>
+
+<body onload="show('login')">
+
+<div class="container">
+
+<!-- LOGIN -->
+<div id="login" class="page">
+    <h2>Login</h2>
+    <input id="lUser" placeholder="Username">
+    <input id="lPass" type="password" placeholder="Password">
+    <button onclick="loginUser()">Login</button>
+
+    <br><br>
+    <button onclick="show('register')">Create Account</button>
+</div>
+
+<!-- REGISTER -->
+<div id="register" class="page">
+    <h2>Register</h2>
+    <input id="rUser" placeholder="Username">
+    <input id="rPass" type="password" placeholder="Password">
+    <button onclick="registerUser()">Register</button>
+    <button onclick="show('login')">Back</button>
+</div>
+
+<!-- ADMIN -->
+<div id="admin" class="page">
+    <h2>Admin Panel</h2>
+
+    <h3>Team Information</h3>
+    <table>
+        <tr><th>Team</th><th>Players</th><th>Slots</th><th>OS</th><th>Purse</th></tr>
+        <tr><td>KKR</td><td>12</td><td>13</td><td>6</td><td>64.30</td></tr>
+        <tr><td>CSK</td><td>16</td><td>9</td><td>4</td><td>43.40</td></tr>
+        <tr><td>SRH</td><td>15</td><td>10</td><td>2</td><td>25.50</td></tr>
+        <tr><td>LSG</td><td>19</td><td>6</td><td>4</td><td>22.95</td></tr>
+        <tr><td>DC</td><td>17</td><td>8</td><td>5</td><td>21.80</td></tr>
+        <tr><td>RCB</td><td>17</td><td>8</td><td>2</td><td>16.40</td></tr>
+        <tr><td>RR</td><td>16</td><td>9</td><td>1</td><td>16.05</td></tr>
+        <tr><td>GT</td><td>20</td><td>5</td><td>4</td><td>12.90</td></tr>
+        <tr><td>PBKS</td><td>21</td><td>4</td><td>2</td><td>11.50</td></tr>
+        <tr><td>MI</td><td>20</td><td>5</td><td>1</td><td>2.75</td></tr>
+    </table>
+
+    <h3>Promote User</h3>
+    <input id="promoteName" placeholder="Username">
+    <button onclick="promoteUser()">Promote</button>
+
+    <h3>Add Player</h3>
+    <input id="pName" placeholder="Player Name">
+
+    <select id="pTeam">
+        <option value="">Team</option>
+        <option>CSK</option><option>MI</option><option>RCB</option>
+        <option>KKR</option><option>SRH</option><option>RR</option>
+        <option>GT</option><option>LSG</option><option>PBKS</option><option>DC</option>
+    </select>
+
+    <select id="pRole">
+        <option value="">Role</option>
+        <option>Batsman</option>
+        <option>Bowler</option>
+        <option>All-Rounder</option>
+        <option>WK-Batsman</option>
+    </select>
+
+    <button onclick="addPlayer()">Add Player</button>
+
+    <h3>Players List</h3>
+    <table>
+        <tr><th>Name</th><th>Team</th><th>Role</th><th>Remove</th></tr>
+        <tbody id="playerBody"></tbody>
+    </table>
+
+    <br>
+    <button onclick="show('login')">Logout</button>
+</div>
+
+<!-- USER -->
+<div id="user" class="page">
+    <h2>User Panel</h2>
+    <p id="role"></p>
+
+    <h3>Team Overview</h3>
+    <table>
+        <tr><th>Team</th><th>Players</th><th>Slots</th><th>OS</th><th>Purse</th></tr>
+        <tr><td>KKR</td><td>12</td><td>13</td><td>6</td><td>64.30</td></tr>
+        <tr><td>CSK</td><td>16</td><td>9</td><td>4</td><td>43.40</td></tr>
+        <tr><td>SRH</td><td>15</td><td>10</td><td>2</td><td>25.50</td></tr>
+        <tr><td>LSG</td><td>19</td><td>6</td><td>4</td><td>22.95</td></tr>
+        <tr><td>DC</td><td>17</td><td>8</td><td>5</td><td>21.80</td></tr>
+        <tr><td>RCB</td><td>17</td><td>8</td><td>2</td><td>16.40</td></tr>
+        <tr><td>RR</td><td>16</td><td>9</td><td>1</td><td>16.05</td></tr>
+        <tr><td>GT</td><td>20</td><td>5</td><td>4</td><td>12.90</td></tr>
+        <tr><td>PBKS</td><td>21</td><td>4</td><td>2</td><td>11.50</td></tr>
+        <tr><td>MI</td><td>20</td><td>5</td><td>1</td><td>2.75</td></tr>
+    </table>
+
+    <br>
+    <button onclick="show('login')">Logout</button>
+</div>
+
+</div>
+
+</body>
+</html>
 </script>
 </body>
 </html>
