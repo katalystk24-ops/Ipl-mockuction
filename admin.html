@@ -2,43 +2,118 @@
 <html>
 <head>
     <title>Auction Admin Panel</title>
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-    <script src="firebase.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background:#222; color:#eee; margin:0; padding:0; }
+        h2 { text-align:center; margin-top:30px; }
+        input { padding:8px; margin:5px 0; width:80%; display:block; margin-left:auto; margin-right:auto; }
+        button { padding:8px 15px; margin:5px; cursor:pointer; border:none; border-radius:4px; }
+        .btn-bid { background:#0077b6; color:#fff; }
+        .btn-sold { background:#4CAF50; color:#fff; }
+        .btn-unsold { background:#f44336; color:#fff; }
+        .btn-next { background:#ffa500; color:#fff; }
+        .container { max-width:500px; margin:50px auto; text-align:center; background:#333; padding:20px; border-radius:8px; }
+        #playerList { margin-top:20px; text-align:left; max-height:200px; overflow-y:auto; }
+        #playerList div { background:#444; margin:5px 0; padding:5px 10px; border-radius:4px; }
+    </style>
 </head>
-<body class="dark-bg">
+<body>
 
-<div style="max-width: 500px; margin: 50px auto; text-align:center;">
+<div class="container">
     <h2>Auction Admin Panel</h2>
 
     <input id="playerName" type="text" placeholder="Player Name">
     <input id="teamName" type="text" placeholder="Team Name">
-    
-    <h3>Bid: ₹<span id="bidAmount">0.5</span> Cr</h3>
 
-    <div style="margin:10px 0;">
-        <button onclick="changeBid(0.5)">+0.5 Cr</button>
-        <button onclick="changeBid(1)">+1 Cr</button>
-        <button onclick="changeBid(2)">+2 Cr</button>
+    <h3>Current Bid: ₹<span id="bidAmount">0.5</span> Cr</h3>
+
+    <div>
+        <button class="btn-bid" onclick="changeBid(0.5)">+0.5 Cr</button>
+        <button class="btn-bid" onclick="changeBid(1)">+1 Cr</button>
+        <button class="btn-bid" onclick="changeBid(2)">+2 Cr</button>
     </div>
 
-    <div style="margin:10px 0;">
-        <button onclick="markSold()">Mark Sold</button>
-        <button onclick="markUnsold()">Mark Unsold</button>
-        <button onclick="nextPlayer()">Next Player</button>
+    <div>
+        <button class="btn-sold" onclick="markSold()">Mark Sold</button>
+        <button class="btn-unsold" onclick="markUnsold()">Mark Unsold</button>
+        <button class="btn-next" onclick="nextPlayer()">Next Player</button>
     </div>
+
+    <h3>Player Queue</h3>
+    <div id="playerList"></div>
 </div>
 
-<script src="app.js"></script>
 <script>
-let currentBid = 0.5; // default bid in Cr
+let currentBid = 0.5;
+let currentPlayerIndex = 0;
+let players = []; // Array of {name, team, bid, sold}
 
+// Update bid amount UI
 function updateUI() {
     document.getElementById("bidAmount").innerText = currentBid.toFixed(2);
 }
 
+// Increase bid
 function changeBid(amount) {
-    currentBid +=
+    currentBid += amount;
+    updateUI();
+}
+
+// Add player to queue if not already
+function addPlayerToQueue(name, team) {
+    if(!name) return alert('Enter player name');
+    players.push({name, team, bid: currentBid, sold: false});
+    renderPlayerList();
+}
+
+// Mark current player sold
+function markSold() {
+    if(players[currentPlayerIndex]) {
+        players[currentPlayerIndex].sold = true;
+        alert(players[currentPlayerIndex].name + ' marked SOLD');
+        renderPlayerList();
+    }
+}
+
+// Mark current player unsold
+function markUnsold() {
+    if(players[currentPlayerIndex]) {
+        players[currentPlayerIndex].sold = false;
+        alert(players[currentPlayerIndex].name + ' marked UNSOLD');
+        renderPlayerList();
+    }
+}
+
+// Move to next player
+function nextPlayer() {
+    const name = document.getElementById("playerName").value;
+    const team = document.getElementById("teamName").value;
+    addPlayerToQueue(name, team);
+
+    currentPlayerIndex = players.length - 1;
+    currentBid = 0.5;
+    updateUI();
+
+    // Clear input fields
+    document.getElementById("playerName").value = '';
+    document.getElementById("teamName").value = '';
+}
+
+// Render player queue
+function renderPlayerList() {
+    const listDiv = document.getElementById("playerList");
+    listDiv.innerHTML = '';
+    players.forEach((p, i) => {
+        const status = p.sold ? '✅ SOLD' : '❌ UNSOLD';
+        const div = document.createElement('div');
+        div.textContent = `${i+1}. ${p.name} (${p.team}) - ₹${p.bid.toFixed(2)} Cr - ${status}`;
+        listDiv.appendChild(div);
+    });
+}
+
+// Initial UI
+updateUI();
+renderPlayerList();
+</script>
+
+</body>
+</html>
